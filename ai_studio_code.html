@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix PEPE Rain</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+        
+        const pepeWord = "PEPE"; 
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        // 0 = normal, 1=P, 2=E, 3=P, 4=E
+        const pepeState = []; 
+
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+            pepeState[x] = 0;
+        }
+
+        const draw = () => {
+            // 1. Fade effect (Trails)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Loop through drops
+            for(let i = 0; i < drops.length; i++) {
+                let text;
+                
+                // --- LOGIC: ARE WE WRITING PEPE? ---
+                if (pepeState[i] > 0) {
+                    // We are currently dropping the word PEPE
+                    text = pepeWord[pepeState[i] - 1];
+                    
+                    // MAKE PEPE STAND OUT:
+                    ctx.fillStyle = '#FFFFFF'; // Bright White
+                    ctx.font = 'bold ' + fontSize + 'px monospace'; // Bold Font
+
+                    // Advance to next letter of PEPE for the next frame
+                    pepeState[i]++;
+
+                    // If we finished "PEPE", reset to normal matrix mode
+                    if(pepeState[i] > pepeWord.length) {
+                        pepeState[i] = 0;
+                    }
+                } 
+                else {
+                    // --- LOGIC: NORMAL MATRIX RAIN ---
+                    ctx.fillStyle = '#0F0'; // Standard Green
+                    ctx.font = fontSize + 'px monospace'; // Normal Font
+                    
+                    text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+
+                    // Randomly decide to start writing PEPE in this column
+                    // Adjusted to 0.98 (2% chance per frame) so it appears often
+                    if(Math.random() > 0.98) {
+                        pepeState[i] = 1; 
+                    }
+                }
+
+                // Draw the character
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Reset drop to top of screen randomly
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                    pepeState[i] = 0; // Clean reset
+                }
+
+                // Move drop down
+                drops[i]++;
+            }
+        };
+
+        // Run loop
+        setInterval(draw, 35);
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const newColumns = canvas.width / fontSize;
+            drops.length = 0;
+            pepeState.length = 0;
+            for(let x = 0; x < newColumns; x++) {
+                drops[x] = 1;
+                pepeState[x] = 0;
+            }
+        });
+    </script>
+</body>
+</html>
